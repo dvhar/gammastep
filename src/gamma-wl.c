@@ -3,17 +3,22 @@
 // gamma-wl.c -- Wayland gamma adjustment header
 
 #include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <alloca.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <wayland-util.h>
+#include <fnmatch.h>
+
+#ifndef FNM_EXTMATCH
+# define FNM_EXTMATCH 0
+#endif
 
 #ifdef ENABLE_NLS
 # include <libintl.h>
@@ -39,6 +44,7 @@ typedef struct {
 	int num_outputs;
 	struct wl_list outputs;
 	int authorized;
+	char *output_name_pattern;
 } wayland_state_t;
 
 struct output {
@@ -47,7 +53,22 @@ struct output {
 	struct zwlr_gamma_control_v1 *gamma_control;
 	uint32_t gamma_size;
 	struct wl_list link;
+	char *name;
 };
+
+static bool output_is_enabled(const wayland_state_t *state, const struct output *output) {
+	if (state->output_name_pattern == NULL) {
+		return true;
+	}
+	if (output->name == NULL) {
+		return false;
+	}
+	int match = fnmatch(state->output_name_pattern, output->name, FNM_EXTMATCH);
+	if (match == 0) {
+		return true;
+	}
+	return false;
+}
 
 static int
 wayland_init(wayland_state_t **state)
@@ -80,6 +101,27 @@ static const struct orbital_authorizer_feedback_listener authorizer_feedback_lis
 	authorizer_feedback_denied
 };
 
+static void output_name(void *data, struct wl_output *wl_output, const char *name) {
+	struct output *state = data;
+	if ((state->name = strdup(name)) == NULL) {
+		vlog_err("Failed to allocate memory.");
+		exit(EXIT_FAILURE);
+	}
+}
+
+static void output_noop() {
+	// Noop
+}
+
+static const struct wl_output_listener output_listener = {
+	.geometry = output_noop,
+	.mode = output_noop,
+	.done = output_noop,
+	.scale = output_noop,
+	.name = output_name,
+	.description = output_noop,
+};
+
 static void
 registry_global(void *data, struct wl_registry *registry, uint32_t id, const char *interface, uint32_t version)
 {
@@ -96,7 +138,7 @@ registry_global(void *data, struct wl_registry *registry, uint32_t id, const cha
 			return;
 		}
 		output->global_id = id;
-		output->output = wl_registry_bind(registry, id, &wl_output_interface, 1);
+		output->output = wl_registry_bind(registry, id, &wl_output_interface, 4);
 		output->gamma_control = NULL;
 		output->gamma_size = 0;
 		wl_list_insert(&state->outputs, &output->link);
@@ -186,6 +228,32 @@ wayland_start(wayland_state_t *state)
 	wl_registry_add_listener(state->registry, &registry_listener, state);
 
 	wl_display_roundtrip(state->display);
+	struct output *output;
+	wl_list_for_each(output, &state->outputs, link) {
+		wl_output_add_listener(output->output, &output_listener, output);
+	}
+	wl_display_roundtrip(state->display);
+	struct output *tmp;
+	wl_list_for_each_safe(output, tmp, &state->outputs, link) {
+		if (output_is_enabled(state, output)) {
+			continue;
+		}
+		if (output->name) {
+			vlog_info("%s: %s",
+			          _("Disabling output due to configuration"),
+			          output->name);
+		} else {
+			vlog_info(_("Disabling output due to configuration"));
+		}
+		if (output->gamma_control) {
+			zwlr_gamma_control_v1_destroy(output->gamma_control);
+			output->gamma_control = NULL;
+		}
+		wl_output_destroy(output->output);
+		wl_list_remove(&output->link);
+		free(output);
+		free(output->name);
+	}
 	if (!state->gamma_control_manager) {
 		vlog_err(_("Could not control gamma, exiting."));
 		return -1;
@@ -234,6 +302,7 @@ wayland_free(wayland_state_t *state)
 		wl_output_destroy(output->output);
 		wl_list_remove(&output->link);
 		free(output);
+		free(output->name);
 	}
 
 	if (state->gamma_control_manager) {
@@ -252,13 +321,24 @@ wayland_free(wayland_state_t *state)
 static void
 wayland_print_help(FILE *f)
 {
-	fputs(_("Adjust gamma ramps with a Wayland compositor.\n"), f);
+	fputs(_("Adjust gamma ramps with a Wayland compositor."), f);
+	fputs("\n\n  output=N\t\t", f);
+	fputs(_("only apply to outputs with names matching this pattern"), f);
 	fputs("\n", f);
 }
 
 static int
 wayland_set_option(wayland_state_t *state, const char *key, const char *value)
 {
+	if (strcasecmp(key, "output") == 0) {
+		if (!(state->output_name_pattern = strdup(value))) {
+			vlog_err(_("Failed to allocate memory"));
+			return -1;
+		}
+	} else {
+		vlog_err("%s: `%s'.", _("Unknown method parameter"), key);
+		return -1;
+	}
 	return 0;
 }
 
