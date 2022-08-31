@@ -231,6 +231,7 @@ wayland_free(wayland_state_t *state)
 		}
 		wl_output_destroy(output->output);
 	}
+	free(state->outputs);
 
 	if (state->gamma_control_manager) {
 		zwlr_gamma_control_manager_v1_destroy(state->gamma_control_manager);
