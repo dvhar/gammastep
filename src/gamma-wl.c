@@ -289,6 +289,13 @@ wayland_set_temperature(wayland_state_t *state, const color_setting_t *setting)
 
 	for (int i = 0; i < state->num_outputs; ++i) {
 		struct output *output = &state->outputs[i];
+		/* For some reason, gamma control will be reported as
+		 * no longer supported after a tty switch. For this
+		 * reason, retry if gamma_size has become 0. */
+		if (output->gamma_control && output->gamma_size == 0) {
+			zwlr_gamma_control_v1_destroy(output->gamma_control);
+			output->gamma_control = NULL;
+		}
 		if (!output->gamma_control) {
 			output->gamma_control = zwlr_gamma_control_manager_v1_get_gamma_control(state->gamma_control_manager, output->output);
 			zwlr_gamma_control_v1_add_listener(output->gamma_control, &gamma_control_listener, output);
