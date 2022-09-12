@@ -1,6 +1,12 @@
 News
 ====
 
+v2.0.9.11 (2022-09-11)
+-------------------
+- fix: wayland: avoid memory leak (thanks @joanbrugueram)
+- fix: wayland: recover from failure due to VT switch
+  (thanks @joanbrugueram and @lheckemann)
+
 v2.0.8 (2021-12-22)
 -------------------
 - Fix '-q' option (#34)

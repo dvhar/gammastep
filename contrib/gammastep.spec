@@ -5,7 +5,7 @@ Release:        0.1%{?dist}
 Summary:        Adjusts the color temperature of your screen according to time of day
 
 License:        GPLv3+
-URL:            https://gitlab.com/chinstrap/gammastep
+URL:            https:////gitlab.freedesktop.org/CameronNemo/gammastep
 Source0:        %{url}/-/archive/v%{version}/%{name}-v%{version}.tar.gz
 
 BuildRequires:  desktop-file-utils

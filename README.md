@@ -100,9 +100,10 @@ software cursors instead.
 
 **I have an issue but it was not mentioned in this FAQ. What do I do?**
 
-Please go to [the issue tracker](https://gitlab.com/chinstrap/gammastep/issues) and
-check if your issue has already been reported. If not, please open a new issue
-describing you problem.
+Please go to
+[the issue tracker](https://gitlab.freedesktop.org/CameronNemo/gammastep/issues)
+and check if your issue has already been reported. If not, please open a new
+issue describing you problem.
 
 
 **When running as a systemd service, the connection to Xorg/Wayland fails**

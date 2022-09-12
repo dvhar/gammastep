@@ -12,5 +12,5 @@
    <_p>The color temperature is set according to the position of the sun. A different color temperature is set during night and daytime. During twilight and early morning, the color temperature transitions smoothly from night to daytime temperature to allow your eyes to slowly adapt.</_p>
    <_p>This program provides a status icon that allows the user to control color temperature.</_p>
  </description>
- <url type="homepage">https://gitlab.com/chinstrap/gammastep</url>
+ <url type="homepage">https://gitlab.freedesktop.org/CameronNemo/gammastep</url>
 </component>
