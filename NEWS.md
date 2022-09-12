@@ -1,7 +1,7 @@
 News
 ====
 
-v2.0.9.11 (2022-09-11)
+v2.0.9 (2022-09-11)
 -------------------
 - fix: wayland: avoid memory leak (thanks @joanbrugueram)
 - fix: wayland: recover from failure due to VT switch
