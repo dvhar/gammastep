@@ -8,10 +8,13 @@ stages:
 default:
   stage: build
   script:
+    - xbps-install -S
+    - xbps-install -yu xbps
+    - xbps-install -yu
     - ./bootstrap
     - mkdir build
     - cd build
-    - ../configure --enable-drm --enable-vidmode --enable-randr --enable-geoclue2 --enable-gui --enable-apparmor --with-systemduserunitdir=no
+    - ../configure --enable-drm --enable-wayland --enable-geoclue2 --enable-gui --enable-apparmor --with-systemduserunitdir=no
     - make
     - ./src/gammastep -l 12:-34 -pv
     - ./src/gammastep -l 12:-34 -m dummy -vo
