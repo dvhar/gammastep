@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <math.h>
+#include <sys/types.h>
 
 #include "redshift.h"
 
@@ -272,7 +273,7 @@ interpolate_color(float a, const float *c1, const float *c2, float *c)
 
 void
 colorramp_fill(uint16_t *gamma_r, uint16_t *gamma_g, uint16_t *gamma_b,
-	       int size, const color_setting_t *setting)
+	       ssize_t size, const color_setting_t *setting)
 {
 	/* Approximate white point */
 	float white_point[3];
@@ -281,7 +282,7 @@ colorramp_fill(uint16_t *gamma_r, uint16_t *gamma_g, uint16_t *gamma_b,
 	interpolate_color(alpha, &blackbody_color[temp_index],
 			  &blackbody_color[temp_index+3], white_point);
 
-	for (int i = 0; i < size; i++) {
+	for (ssize_t i = 0; i < size; i++) {
 		gamma_r[i] = F((double)gamma_r[i]/(UINT16_MAX+1), 0) *
 			(UINT16_MAX+1);
 		gamma_g[i] = F((double)gamma_g[i]/(UINT16_MAX+1), 1) *
@@ -293,7 +294,7 @@ colorramp_fill(uint16_t *gamma_r, uint16_t *gamma_g, uint16_t *gamma_b,
 
 void
 colorramp_fill_float(float *gamma_r, float *gamma_g, float *gamma_b,
-		     int size, const color_setting_t *setting)
+		     ssize_t size, const color_setting_t *setting)
 {
 	/* Approximate white point */
 	float white_point[3];
@@ -302,7 +303,7 @@ colorramp_fill_float(float *gamma_r, float *gamma_g, float *gamma_b,
 	interpolate_color(alpha, &blackbody_color[temp_index],
 			  &blackbody_color[temp_index+3], white_point);
 
-	for (int i = 0; i < size; i++) {
+	for (ssize_t i = 0; i < size; i++) {
 		gamma_r[i] = F((double)gamma_r[i], 0);
 		gamma_g[i] = F((double)gamma_g[i], 1);
 		gamma_b[i] = F((double)gamma_b[i], 2);

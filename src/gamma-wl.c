@@ -2,6 +2,7 @@
 // Copyright (c) 2015  Giulio Camuffo <giuliocamuffo@gmail.com>
 // gamma-wl.c -- Wayland gamma adjustment header
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -311,11 +312,11 @@ wayland_set_temperature(wayland_state_t *state, const color_setting_t *setting)
 
 	int unsupported_outputs = 0;
 	wl_list_for_each(output, &state->outputs, link) {
-		if (output->gamma_size == 0) {
+		if (output->gamma_size == 0 || output->gamma_size > SSIZE_MAX / (3 * sizeof(uint16_t))) {
 			unsupported_outputs += 1;
 			continue;
 		}
-		int size = output->gamma_size;
+		ssize_t size = output->gamma_size;
 		size_t ramp_bytes = size * sizeof(uint16_t);
 		size_t total_bytes = ramp_bytes * 3;
 
