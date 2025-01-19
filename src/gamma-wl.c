@@ -97,6 +97,7 @@ registry_global(void *data, struct wl_registry *registry, uint32_t id, const cha
 		output->global_id = id;
 		output->output = wl_registry_bind(registry, id, &wl_output_interface, 1);
 		output->gamma_control = NULL;
+		output->gamma_size = 0;
 		wl_list_insert(&state->outputs, &output->link);
 	} else if (strcmp(interface, "orbital_authorizer") == 0) {
 		struct wl_event_queue *queue = wl_display_create_queue(state->display);
