@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <wayland-util.h>
 
 #ifdef ENABLE_NLS
 # include <libintl.h>
@@ -35,7 +36,7 @@ typedef struct {
 	uint32_t gamma_control_manager_id;
 	struct zwlr_gamma_control_manager_v1 *gamma_control_manager;
 	int num_outputs;
-	struct output *outputs;
+	struct wl_list outputs;
 	int authorized;
 } wayland_state_t;
 
@@ -44,6 +45,7 @@ struct output {
 	struct wl_output *output;
 	struct zwlr_gamma_control_v1 *gamma_control;
 	uint32_t gamma_size;
+	struct wl_list link;
 };
 
 static int
@@ -54,6 +56,7 @@ wayland_init(wayland_state_t **state)
 	if (*state == NULL) return -1;
 
 	memset(*state, 0, sizeof **state);
+	wl_list_init(&(*state)->outputs);
 	return 0;
 }
 
@@ -86,15 +89,15 @@ registry_global(void *data, struct wl_registry *registry, uint32_t id, const cha
 		state->gamma_control_manager = wl_registry_bind(registry, id, &zwlr_gamma_control_manager_v1_interface, 1);
 	} else if (strcmp(interface, "wl_output") == 0) {
 		state->num_outputs++;
-		if (!(state->outputs = realloc(state->outputs, state->num_outputs * sizeof(struct output)))) {
+		struct output *output = malloc(sizeof(struct output));
+		if (output == NULL) {
 			vlog_err(_("Failed to allocate memory"));
 			return;
 		}
-
-		struct output *output = &state->outputs[state->num_outputs - 1];
 		output->global_id = id;
 		output->output = wl_registry_bind(registry, id, &wl_output_interface, 1);
 		output->gamma_control = NULL;
+		wl_list_insert(&state->outputs, &output->link);
 	} else if (strcmp(interface, "orbital_authorizer") == 0) {
 		struct wl_event_queue *queue = wl_display_create_queue(state->display);
 
@@ -125,8 +128,8 @@ registry_global_remove(void *data, struct wl_registry *registry, uint32_t id)
 		exit(EXIT_FAILURE);
 	}
 
-	for (int i = 0; i < state->num_outputs; ++i) {
-		struct output *output = &state->outputs[i];
+	struct output *output;
+	wl_list_for_each(output, &state->outputs, link) {
 		if (output->global_id == id) {
 			if (output->gamma_control) {
 				zwlr_gamma_control_v1_destroy(output->gamma_control);
@@ -134,12 +137,9 @@ registry_global_remove(void *data, struct wl_registry *registry, uint32_t id)
 			}
 			wl_output_destroy(output->output);
 
-			/* If the removed output is not the last one in the array move the last one
-			 * in the now empty slot. Then shrink the array */
-			if (i < --state->num_outputs) {
-				memcpy(output, &state->outputs[state->num_outputs], sizeof(struct output));
-			}
-			state->outputs = realloc(state->outputs, state->num_outputs * sizeof(struct output));
+			state->num_outputs--;
+			wl_list_remove(&output->link);
+			free(output);
 
 			return;
 		}
@@ -188,7 +188,7 @@ wayland_start(wayland_state_t *state)
 		vlog_err(_("Could not control gamma, exiting."));
 		return -1;
 	}
-	if (state->num_outputs > 0 && !state->outputs) {
+	if (state->num_outputs > 0 && wl_list_empty(&state->outputs)) {
 		vlog_err(_("No outputs available, exiting."));
 		return -1;
 	}
@@ -199,8 +199,8 @@ wayland_start(wayland_state_t *state)
 static void
 wayland_restore(wayland_state_t *state)
 {
-	for (int i = 0; i < state->num_outputs; ++i) {
-		struct output *output = &state->outputs[i];
+	struct output *output;
+	wl_list_for_each(output, &state->outputs, link) {
 		if (output->gamma_control) {
 			zwlr_gamma_control_v1_destroy(output->gamma_control);
 			output->gamma_control = NULL;
@@ -223,15 +223,16 @@ wayland_free(wayland_state_t *state)
 		wl_callback_destroy(state->callback);
 	}
 
-	for (int i = 0; i < state->num_outputs; ++i) {
-		struct output *output = &state->outputs[i];
+	struct output *output, *tmp;
+	wl_list_for_each_safe(output, tmp, &state->outputs, link) {
 		if (output->gamma_control) {
 			zwlr_gamma_control_v1_destroy(output->gamma_control);
 			output->gamma_control = NULL;
 		}
 		wl_output_destroy(output->output);
+		wl_list_remove(&output->link);
+		free(output);
 	}
-	free(state->outputs);
 
 	if (state->gamma_control_manager) {
 		zwlr_gamma_control_manager_v1_destroy(state->gamma_control_manager);
@@ -288,8 +289,8 @@ wayland_set_temperature(wayland_state_t *state, const color_setting_t *setting)
 		return ret;
 	}
 
-	for (int i = 0; i < state->num_outputs; ++i) {
-		struct output *output = &state->outputs[i];
+	struct output *output;
+	wl_list_for_each(output, &state->outputs, link) {
 		/* For some reason, gamma control will be reported as
 		 * no longer supported after a tty switch. For this
 		 * reason, retry if gamma_size has become 0. */
@@ -308,8 +309,7 @@ wayland_set_temperature(wayland_state_t *state, const color_setting_t *setting)
 	}
 
 	int unsupported_outputs = 0;
-	for (int i = 0; i < state->num_outputs; ++i) {
-		struct output *output = &state->outputs[i];
+	wl_list_for_each(output, &state->outputs, link) {
 		if (output->gamma_size == 0) {
 			unsupported_outputs += 1;
 			continue;
