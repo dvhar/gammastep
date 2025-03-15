@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([gammastep], [2.0.9], [https://gitlab.freedesktop.org/CameronNemo/gammastep/issues])
+AC_INIT([gammastep], [2.0.10], [https://gitlab.freedesktop.org/CameronNemo/gammastep/issues])
 AC_CONFIG_SRCDIR([src/redshift.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])

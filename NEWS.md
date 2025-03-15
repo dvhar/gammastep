@@ -1,6 +1,15 @@
 News
 ====
 
+v2.0.10 (2025-03-15)
+--------------------
+- fix: wayland: potential uninitialized read (thanks @joanbrugueram)
+- fix: wayland: integer overflow with certain gamma sizes (thanks to Pierre Colin)
+- fix: hooks: close hooks directory
+- feature: hooks: do not run files with a "~" suffix
+- Update Swedish translation
+- Update AppData content rating
+
 v2.0.9 (2022-09-11)
 -------------------
 - fix: wayland: avoid memory leak (thanks @joanbrugueram)
