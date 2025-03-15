@@ -37,7 +37,7 @@ msgid ""
 "daytime temperature to allow your eyes to slowly adapt."
 msgstr ""
 "Färgtemperaturen ställs in beroende på positionen av solen. En annan "
-"färgtemperatur sätts under natten och dagen. Under skymning och tidigt på "
+"färgtemperatur sätts under natten och dagen. Under gryning och tidigt på "
 "morgonen övergår färgtemperaturen smidigt från natt till dagtidstemperatur "
 "för att ge dina ögon tid att långsamt anpassa sig."
 
