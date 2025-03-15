@@ -4,6 +4,7 @@
  <id>gammastep-indicator.desktop</id>
  <metadata_license>CC0</metadata_license>
  <project_license>GPL-3.0+</project_license>
+ <content_rating type="oars-1.1" />
  <name>Gammastep Indicator</name>
  <summary>Adjust display hue to outside lighting conditions</summary>
 
