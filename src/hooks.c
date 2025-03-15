@@ -88,4 +88,6 @@ hooks_signal_period_change(period_t prev_period, period_t period)
 			_exit(EXIT_FAILURE);
 		}
 	}
+	
+	closedir(hooks_dir);
 }
