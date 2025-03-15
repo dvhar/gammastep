@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <pwd.h>
+#include <string.h>
 
 #include "hooks.h"
 #include "redshift.h"
@@ -62,6 +63,7 @@ hooks_signal_period_change(period_t prev_period, period_t period)
 	while ((ent = readdir(hooks_dir)) != NULL) {
 		/* Skip hidden and special files (., ..) */
 		if (ent->d_name[0] == '\0' || ent->d_name[0] == '.') continue;
+		if (strchr(ent->d_name, '\0')[-1] == '~') continue;
 
 		char *hook_name = ent->d_name;
 		char hook_path[MAX_HOOK_PATH];
