@@ -1,6 +1,11 @@
 News
 ====
 
+v2.0.11 (2025-03-29)
+--------------------
+- fix: memory issues with output name (thanks @joanbrugueram)
+- fix: incompatible pointer type for noop functions (thanks for reporting @sping)
+
 v2.0.10 (2025-03-15)
 --------------------
 - fix: wayland: potential uninitialized read (thanks @joanbrugueram)
