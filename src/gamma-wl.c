@@ -171,6 +171,7 @@ registry_global(void *data, struct wl_registry *registry, uint32_t id, const cha
 			vlog_err(_("Failed to allocate memory"));
 			return;
 		}
+		output->name = NULL;
 		output->global_id = id;
 		output->output = wl_registry_bind(registry, id, &wl_output_interface, 4);
 		output->gamma_control = NULL;
@@ -217,6 +218,7 @@ registry_global_remove(void *data, struct wl_registry *registry, uint32_t id)
 
 			state->num_outputs--;
 			wl_list_remove(&output->link);
+			free(output->name);
 			free(output);
 
 			return;
@@ -285,8 +287,8 @@ wayland_start(wayland_state_t *state)
 		}
 		wl_output_destroy(output->output);
 		wl_list_remove(&output->link);
-		free(output);
 		free(output->name);
+		free(output);
 	}
 	if (!state->gamma_control_manager) {
 		vlog_err(_("Could not control gamma, exiting."));
@@ -335,8 +337,8 @@ wayland_free(wayland_state_t *state)
 		}
 		wl_output_destroy(output->output);
 		wl_list_remove(&output->link);
-		free(output);
 		free(output->name);
+		free(output);
 	}
 
 	if (state->gamma_control_manager) {
