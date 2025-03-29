@@ -101,6 +101,40 @@ static const struct orbital_authorizer_feedback_listener authorizer_feedback_lis
 	authorizer_feedback_denied
 };
 
+static void output_geometry(
+	void *data,
+	struct wl_output *wl_output,
+	int x,
+	int y,
+	int phy_width,
+	int phy_height,
+	int subpixel,
+	const char *make,
+	const char *model,
+	int transform
+) {
+	// noop
+}
+
+static void output_mode(
+	void *data,
+	struct wl_output *wl_output,
+	unsigned int flags,
+	int width,
+	int height,
+	int refresh
+) {
+	// noop
+}
+
+static void output_done(void *data, struct wl_output *wl_output) {
+	// noop
+}
+
+static void output_scale(void *data, struct wl_output *wl_output, int scale) {
+	// noop
+}
+
 static void output_name(void *data, struct wl_output *wl_output, const char *name) {
 	struct output *state = data;
 	if ((state->name = strdup(name)) == NULL) {
@@ -109,17 +143,17 @@ static void output_name(void *data, struct wl_output *wl_output, const char *nam
 	}
 }
 
-static void output_noop() {
-	// Noop
+static void output_description(void *data, struct wl_output *wl_output, const char *description) {
+	// noop
 }
 
 static const struct wl_output_listener output_listener = {
-	.geometry = output_noop,
-	.mode = output_noop,
-	.done = output_noop,
-	.scale = output_noop,
+	.geometry = output_geometry,
+	.mode = output_mode,
+	.done = output_done,
+	.scale = output_scale,
 	.name = output_name,
-	.description = output_noop,
+	.description = output_description,
 };
 
 static void
