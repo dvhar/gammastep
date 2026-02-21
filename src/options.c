@@ -141,7 +141,7 @@ print_help(const char *program_name)
 	   DAY is temperature at daytime,
 	   NIGHT is temperature at night
 	   no-wrap */
-	printf(_("Usage: %s -l LAT:LON -t DAY:NIGHT [OPTIONS...]\n"),
+	printf(_("Usage: %s -l LAT:LON -t DAY:NIGHT [OPTIONS...]"),
 		program_name);
 	fputs("\n", stdout);
 
@@ -180,6 +180,15 @@ print_help(const char *program_name)
 		"  -x\t\tReset mode (remove adjustment from screen)\n"
 		"  -r\t\tDisable fading between color temperatures\n"
 		"  -t DAY:NIGHT\tColor temperature to set at daytime/night\n"),
+	      stdout);
+	fputs("\n", stdout);
+
+	/* TRANSLATORS: help output 8 */
+	fputs(_("Once running, gammastep can be controlled by sending it signals.\n"
+		"In manual mode (option -O), SIGRTMIN+1 and SIGRTMIN+2 will adjust the\n"
+		"temperature by 100K, and SIGRTMIN+3 and SIGRTMIN+4 by 500K.\n"
+		"SIGRTMIN+5 will reset the temperature to the initial value.\n"
+		"In continual mode, SIGUSR1 will toggle gammastep on and off.\n"),
 	      stdout);
 	fputs("\n", stdout);
 

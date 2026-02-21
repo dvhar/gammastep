@@ -91,6 +91,12 @@ more red light.
 Default temperature values:
 .IP
 Daytime: 6500K, night: 4500K
+.SH SIGNALS
+Once running, gammastep can be controlled by sending it signals.
+.TP
+In manual mode (option \fB\-O\fR), \fBSIGRTMIN+1\fR and \fBSIGRTMIN+2\fR will adjust the temperature by 100K, and \fBSIGRTMIN+3\fR and \fBSIGRTMIN+4\fR by 500K. \fBSIGRTMIN+5\fR will reset the temperature to the initial value.
+.TP
+In continual mode, \fBSIGUSR1\fR will toggle gammastep on and off.
 .SH CONFIGURATION FILE
 A configuration file with the name \fIconfig.ini\fR can optionally be
 placed in \fI~/.config/gammastep/\fR (if the environment variable
