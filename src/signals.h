@@ -9,8 +9,9 @@
 extern volatile sig_atomic_t exiting;
 extern volatile sig_atomic_t disable;
 extern volatile sig_atomic_t temp_adj;
-extern volatile sig_atomic_t temp_reset_signal;
+extern volatile sig_atomic_t temp_reset;
 
 int signals_install_handlers(void);
+int install_remote_control_handlers(void);
 
 #endif /* REDSHIFT_SIGNALS_H */

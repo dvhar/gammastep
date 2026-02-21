@@ -1155,42 +1155,46 @@ main(int argc, char *argv[])
 		const int initial_temp = options.temp_set;
 		vlog_notice("%s: %uK", _("Color temperature"), options.temp_set);
 
-		/* Adjust temperature */
 		color_setting_t manual = scheme->day;
 		manual.temperature = options.temp_set;
+
+		/* wlroots gamma adjustments automatically revert when the
+		 * process exits, so interrupts are used to exit or adjust temp.*/
+		int is_wayland = strcmp(options.method->name, "wayland") == 0;
+		if (is_wayland) {
+			vlog_notice(_("Press ctrl-c to stop..."));
+		}
 
 		r = signals_install_handlers();
 		if (r < 0) {
 			options.method->free(method_state);
 			exit(EXIT_FAILURE);
 		}
+		if (install_remote_control_handlers() < 0)
+			vlog_err(_("Temperature adjustment setup failed."));
 
-		int done = 0;
-		while (!done) {
-			if (exiting) {
-				done = 1;
-				exiting = 0;
-			}
+		while (!exiting) {
 			if (temp_adj) {
-				manual.temperature = CLAMP(MIN_TEMP, manual.temperature + temp_adj, MAX_TEMP);
+				manual.temperature = CLAMP(MIN_TEMP,
+					manual.temperature + temp_adj, MAX_TEMP);
 				temp_adj = 0;
 			}
-			if (temp_reset_signal) {
+			if (temp_reset) {
 				manual.temperature = initial_temp;
-				temp_reset_signal = 0;
+				temp_reset = 0;
 			}
-			r = options.method->set_temperature(
-				method_state, &manual, options.preserve_gamma);
+			/* Adjust temperature */
+			r = options.method->set_temperature(method_state, &manual,
+				   options.preserve_gamma);
 			if (r < 0) {
 				vlog_err(_("Temperature adjustment failed."));
 				options.method->free(method_state);
 				exit(EXIT_FAILURE);
 			}
-			pause();
+			if (is_wayland) {
+				pause();
+			}
 		}
-
-		/* Restore saved gamma ramps */
-		options.method->restore(method_state);
 	}
 	break;
 	case PROGRAM_MODE_RESET:
