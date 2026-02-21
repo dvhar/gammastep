@@ -15,8 +15,7 @@
 
 volatile sig_atomic_t exiting = 0;
 volatile sig_atomic_t disable = 0;
-volatile sig_atomic_t temp_up_signal = 0;
-volatile sig_atomic_t temp_down_signal = 0;
+volatile sig_atomic_t temp_adj = 0;
 
 
 /* Signal handler for exit signals */
@@ -37,14 +36,14 @@ sigdisable(int signo)
 static void
 sigtup(int signo)
 {
-	temp_up_signal = 1;
+	temp_adj = 100;
 }
 
 /* Signal handler for temperature down signal */
 static void
 sigtndown(int signo)
 {
-	temp_down_signal = 1;
+	temp_adj = -100;
 }
 
 int
