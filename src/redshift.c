@@ -1152,6 +1152,7 @@ main(int argc, char *argv[])
 	break;
 	case PROGRAM_MODE_MANUAL:
 	{
+		const int initial_temp = options.temp_set;
 		vlog_notice("%s: %uK", _("Color temperature"), options.temp_set);
 
 		/* Adjust temperature */
@@ -1173,6 +1174,10 @@ main(int argc, char *argv[])
 			if (temp_adj) {
 				manual.temperature = CLAMP(MIN_TEMP, manual.temperature + temp_adj, MAX_TEMP);
 				temp_adj = 0;
+			}
+			if (temp_reset_signal) {
+				manual.temperature = initial_temp;
+				temp_reset_signal = 0;
 			}
 			r = options.method->set_temperature(
 				method_state, &manual, options.preserve_gamma);
