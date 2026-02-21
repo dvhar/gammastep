@@ -15,6 +15,8 @@
 
 volatile sig_atomic_t exiting = 0;
 volatile sig_atomic_t disable = 0;
+volatile sig_atomic_t temp_up_signal = 0;
+volatile sig_atomic_t temp_down_signal = 0;
 
 
 /* Signal handler for exit signals */
@@ -29,6 +31,20 @@ static void
 sigdisable(int signo)
 {
 	disable = 1;
+}
+
+/* Signal handler for temperature up signal */
+static void
+sigtup(int signo)
+{
+	temp_up_signal = 1;
+}
+
+/* Signal handler for temperature down signal */
+static void
+sigtndown(int signo)
+{
+	temp_down_signal = 1;
 }
 
 int
@@ -62,6 +78,28 @@ signals_install_handlers(void)
 	sigact.sa_flags = 0;
 
 	r = sigaction(SIGUSR1, &sigact, NULL);
+	if (r < 0) {
+		perror("sigaction");
+		return -1;
+	}
+
+	/* Install signal handler for SIGRTMIN+1 signal */
+	sigact.sa_handler = sigtup;
+	sigact.sa_mask = sigset;
+	sigact.sa_flags = 0;
+
+	r = sigaction(SIGRTMIN + 1, &sigact, NULL);
+	if (r < 0) {
+		perror("sigaction");
+		return -1;
+	}
+
+	/* Install signal handler for SIGRTMIN+2 signal */
+	sigact.sa_handler = sigtndown;
+	sigact.sa_mask = sigset;
+	sigact.sa_flags = 0;
+
+	r = sigaction(SIGRTMIN + 2, &sigact, NULL);
 	if (r < 0) {
 		perror("sigaction");
 		return -1;

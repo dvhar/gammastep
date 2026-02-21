@@ -8,6 +8,8 @@
 
 extern volatile sig_atomic_t exiting;
 extern volatile sig_atomic_t disable;
+extern volatile sig_atomic_t temp_up_signal;
+extern volatile sig_atomic_t temp_down_signal;
 
 int signals_install_handlers(void);
 
