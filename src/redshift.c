@@ -1172,7 +1172,6 @@ main(int argc, char *argv[])
 		}
 
 		// New variables for manual mode disable logic
-		int prev_disabled = 1; // Initialize to 1 so "Enabled" is printed on first run
 		int disabled = 0;
 		int should_reset = 1; // To force a reset when disabled state changes
 
@@ -1183,12 +1182,6 @@ main(int argc, char *argv[])
 				disable = 0;
 				should_reset = 1; // Force a reset of temperature when disabled state changes
 			}
-
-			// Print status change
-			if (disabled != prev_disabled) {
-				vlog_notice("%s: %s", _("Status"), disabled ? _("Disabled") : _("Enabled"));
-			}
-			prev_disabled = disabled;
 
 			if (disabled) {
 				vlog_debug("Currently disabled");
@@ -1204,29 +1197,28 @@ main(int argc, char *argv[])
 						options.method->free(method_state);
 						exit(EXIT_FAILURE);
 					}
-					should_reset = 0; // Reset done
+					should_reset = 0;
 				}
-			} else { // Not disabled, apply manual temperature
+			} else {
 				if (temp_adj) {
 					manual.temperature = CLAMP(MIN_TEMP,
 						manual.temperature + temp_adj, MAX_TEMP);
 					temp_adj = 0;
-					should_reset = 1; // Force temperature update
+					should_reset = 1;
 				}
 				if (temp_reset) {
 					manual.temperature = initial_temp;
 					temp_reset = 0;
-					should_reset = 1; // Force temperature update
+					should_reset = 1;
 				}
 				if (temp_set_new) {
 					manual.temperature = CLAMP(MIN_TEMP,
 						temp_set_new, MAX_TEMP);
 					temp_set_new = 0;
-					should_reset = 1; // Force temperature update
+					should_reset = 1;
 				}
 
-				/* Adjust temperature only if not disabled or if a reset is needed */
-				if (should_reset || temp_adj || temp_reset) { // Always adjust if temp_adj or temp_reset happened
+				if (should_reset || temp_adj || temp_reset) {
 					r = options.method->set_temperature(method_state, &manual,
 						   options.preserve_gamma);
 					if (r < 0) {
@@ -1234,11 +1226,11 @@ main(int argc, char *argv[])
 						options.method->free(method_state);
 						exit(EXIT_FAILURE);
 					}
-					should_reset = 0; // Reset done
+					should_reset = 0;
 				}
 			}
 
-			pause(); // Wait for signals
+			pause(); // Wait for control or exit signals
 		}
 	}
 	break;

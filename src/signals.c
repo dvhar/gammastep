@@ -83,15 +83,15 @@ sigtempreset(int signo)
 	temp_reset = 1;
 }
 
-int set_signal(int sig, void (*func)(int)) {
+int set_signal_internal(int sig, void *func, int flags) {
 	struct sigaction sigact;
 	sigset_t sigset;
 	int r;
 
 	sigemptyset(&sigset);
-	sigact.sa_handler = func;
+	sigact.sa_sigaction = func;
 	sigact.sa_mask = sigset;
-	sigact.sa_flags = 0;
+	sigact.sa_flags = flags;
 
 	r = sigaction(sig, &sigact, NULL);
 	if (r < 0) {
@@ -101,22 +101,14 @@ int set_signal(int sig, void (*func)(int)) {
 	return 0;
 }
 
-int set_sigaction(int sig, void (*func)(int, siginfo_t*, void*)) {
-	struct sigaction sigact;
-	sigset_t sigset;
-	int r;
+int set_signal(int sig, void (*func)(int))
+{
+    return set_signal_internal(sig, func, 0);
+}
 
-	sigemptyset(&sigset);
-	sigact.sa_sigaction = func;
-	sigact.sa_mask = sigset;
-	sigact.sa_flags = SA_SIGINFO;
-
-	r = sigaction(sig, &sigact, NULL);
-	if (r < 0) {
-		perror("sigaction");
-		return -1;
-	}
-	return 0;
+int set_signal_with_arg(int sig, void (*func)(int, siginfo_t*, void*))
+{
+    return set_signal_internal(sig, func, SA_SIGINFO);
 }
 
 int
@@ -143,6 +135,6 @@ signals_install_manual_mode_handlers(void)
 		set_signal(SIGRTMIN + 3, sigbigup) ?:
 		set_signal(SIGRTMIN + 4, sigbigdown) ?:
 		set_signal(SIGRTMIN + 5, sigtempreset) ?:
-		set_sigaction(SIGRTMIN + 6, sigsettemp) ?:
-		set_sigaction(SIGRTMIN + 7, sigadjtemp);
+		set_signal_with_arg(SIGRTMIN + 6, sigsettemp) ?:
+		set_signal_with_arg(SIGRTMIN + 7, sigadjtemp);
 }

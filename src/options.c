@@ -141,7 +141,7 @@ print_help(const char *program_name)
 	   DAY is temperature at daytime,
 	   NIGHT is temperature at night
 	   no-wrap */
-	printf(_("Usage: %s -l LAT:LON -t DAY:NIGHT [OPTIONS...]"),
+	printf(_("Usage: %s -l LAT:LON -t DAY:NIGHT [OPTIONS...]\n"),
 		program_name);
 	fputs("\n", stdout);
 
