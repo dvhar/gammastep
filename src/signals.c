@@ -41,6 +41,13 @@ sigsettemp(int sig, siginfo_t *info, void *ucontext)
 	temp_set_new = info->si_value.sival_int;
 }
 
+/* Signal handler for adjusting the temperature */
+static void
+sigadjtemp(int sig, siginfo_t *info, void *ucontext)
+{
+	temp_adj = info->si_value.sival_int;
+}
+
 /* Signal handler for small temperature up signal */
 static void
 sigsmallup(int signo)
@@ -136,5 +143,6 @@ signals_install_manual_mode_handlers(void)
 		set_signal(SIGRTMIN + 3, sigbigup) ?:
 		set_signal(SIGRTMIN + 4, sigbigdown) ?:
 		set_signal(SIGRTMIN + 5, sigtempreset) ?:
-		set_sigaction(SIGRTMIN + 6, sigsettemp);
+		set_sigaction(SIGRTMIN + 6, sigsettemp) ?:
+		set_sigaction(SIGRTMIN + 7, sigadjtemp);
 }
