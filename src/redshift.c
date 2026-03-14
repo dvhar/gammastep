@@ -1218,6 +1218,12 @@ main(int argc, char *argv[])
 					temp_reset = 0;
 					should_reset = 1; // Force temperature update
 				}
+				if (temp_set_new) {
+					manual.temperature = CLAMP(MIN_TEMP,
+						temp_set_new, MAX_TEMP);
+					temp_set_new = 0;
+					should_reset = 1; // Force temperature update
+				}
 
 				/* Adjust temperature only if not disabled or if a reset is needed */
 				if (should_reset || temp_adj || temp_reset) { // Always adjust if temp_adj or temp_reset happened

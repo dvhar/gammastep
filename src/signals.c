@@ -17,6 +17,7 @@ volatile sig_atomic_t exiting = 0;
 volatile sig_atomic_t disable = 0;
 volatile sig_atomic_t temp_adj = 0;
 volatile sig_atomic_t temp_reset = 0;
+volatile sig_atomic_t temp_set_new = 0;
 
 
 /* Signal handler for exit signals */
@@ -31,6 +32,13 @@ static void
 sigdisable(int signo)
 {
 	disable = 1;
+}
+
+/* Signal handler for setting a specific temperature */
+static void
+sigsettemp(int sig, siginfo_t *info, void *ucontext)
+{
+	temp_set_new = info->si_value.sival_int;
 }
 
 /* Signal handler for small temperature up signal */
@@ -86,6 +94,24 @@ int set_signal(int sig, void (*func)(int)) {
 	return 0;
 }
 
+int set_sigaction(int sig, void (*func)(int, siginfo_t*, void*)) {
+	struct sigaction sigact;
+	sigset_t sigset;
+	int r;
+
+	sigemptyset(&sigset);
+	sigact.sa_sigaction = func;
+	sigact.sa_mask = sigset;
+	sigact.sa_flags = SA_SIGINFO;
+
+	r = sigaction(sig, &sigact, NULL);
+	if (r < 0) {
+		perror("sigaction");
+		return -1;
+	}
+	return 0;
+}
+
 int
 signals_install_continuous_mode_handlers(void)
 {
@@ -109,5 +135,6 @@ signals_install_manual_mode_handlers(void)
 		set_signal(SIGRTMIN + 2, sigsmalldown) ?:
 		set_signal(SIGRTMIN + 3, sigbigup) ?:
 		set_signal(SIGRTMIN + 4, sigbigdown) ?:
-		set_signal(SIGRTMIN + 5, sigtempreset);
+		set_signal(SIGRTMIN + 5, sigtempreset) ?:
+		set_sigaction(SIGRTMIN + 6, sigsettemp);
 }
