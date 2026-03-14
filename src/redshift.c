@@ -544,7 +544,7 @@ run_continual_mode(const location_provider_t *provider,
 	int fade_time = 0;
 	color_setting_t fade_start_interp;
 
-	r = signals_install_handlers();
+	r = signals_install_continuous_mode_handlers();
 	if (r < 0) {
 		return r;
 	}
@@ -1165,35 +1165,74 @@ main(int argc, char *argv[])
 			vlog_notice(_("Press ctrl-c to stop..."));
 		}
 
-		r = signals_install_handlers();
+		r = signals_install_manual_mode_handlers();
 		if (r < 0) {
 			options.method->free(method_state);
 			exit(EXIT_FAILURE);
 		}
-		if (install_remote_control_handlers() < 0)
-			vlog_err(_("Temperature adjustment setup failed."));
+
+		// New variables for manual mode disable logic
+		int prev_disabled = 1; // Initialize to 1 so "Enabled" is printed on first run
+		int disabled = 0;
+		int should_reset = 1; // To force a reset when disabled state changes
 
 		while (!exiting) {
-			if (temp_adj) {
-				manual.temperature = CLAMP(MIN_TEMP,
-					manual.temperature + temp_adj, MAX_TEMP);
-				temp_adj = 0;
+			// Check to see if disable signal was caught
+			if (disable) { // No need for !done here as it's not a "done" state like continual mode
+				disabled = !disabled;
+				disable = 0;
+				should_reset = 1; // Force a reset of temperature when disabled state changes
 			}
-			if (temp_reset) {
-				manual.temperature = initial_temp;
-				temp_reset = 0;
+
+			// Print status change
+			if (disabled != prev_disabled) {
+				vlog_notice("%s: %s", _("Status"), disabled ? _("Disabled") : _("Enabled"));
 			}
-			/* Adjust temperature */
-			r = options.method->set_temperature(method_state, &manual,
-				   options.preserve_gamma);
-			if (r < 0) {
-				vlog_err(_("Temperature adjustment failed."));
-				options.method->free(method_state);
-				exit(EXIT_FAILURE);
+			prev_disabled = disabled;
+
+			if (disabled) {
+				vlog_debug("Currently disabled");
+				// If disabled, we still need to process other signals like temp_adj/temp_reset
+				// but we don't apply the temperature unless should_reset is true.
+				// We also need to ensure the screen is reset to neutral if it was previously enabled.
+				if (should_reset) {
+					color_setting_t reset_temp;
+					color_setting_reset(&reset_temp);
+					r = options.method->set_temperature(method_state, &reset_temp, 0);
+					if (r < 0) {
+						vlog_err(_("Temperature adjustment failed."));
+						options.method->free(method_state);
+						exit(EXIT_FAILURE);
+					}
+					should_reset = 0; // Reset done
+				}
+			} else { // Not disabled, apply manual temperature
+				if (temp_adj) {
+					manual.temperature = CLAMP(MIN_TEMP,
+						manual.temperature + temp_adj, MAX_TEMP);
+					temp_adj = 0;
+					should_reset = 1; // Force temperature update
+				}
+				if (temp_reset) {
+					manual.temperature = initial_temp;
+					temp_reset = 0;
+					should_reset = 1; // Force temperature update
+				}
+
+				/* Adjust temperature only if not disabled or if a reset is needed */
+				if (should_reset || temp_adj || temp_reset) { // Always adjust if temp_adj or temp_reset happened
+					r = options.method->set_temperature(method_state, &manual,
+						   options.preserve_gamma);
+					if (r < 0) {
+						vlog_err(_("Temperature adjustment failed."));
+						options.method->free(method_state);
+						exit(EXIT_FAILURE);
+					}
+					should_reset = 0; // Reset done
+				}
 			}
-			if (is_wayland) {
-				pause();
-			}
+
+			pause(); // Wait for signals
 		}
 	}
 	break;

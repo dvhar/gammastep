@@ -87,26 +87,27 @@ int set_signal(int sig, void (*func)(int)) {
 }
 
 int
-signals_install_handlers(void)
+signals_install_continuous_mode_handlers(void)
 {
-	/* Install signal handler for INT and TERM signals */
+	/* Install handlers for exit, disable, and ignoring children */
 	return set_signal(SIGINT, sigexit) ?:
-	set_signal(SIGTERM, sigexit) ?:
-
-	/* Install signal handler for USR1 signal */
-	set_signal(SIGUSR1, sigdisable) ?:
-
-	set_signal(SIGCHLD, SIG_IGN);
+		set_signal(SIGTERM, sigexit) ?:
+		set_signal(SIGUSR1, sigdisable) ?:
+		set_signal(SIGCHLD, SIG_IGN);
 
 }
 
 int
-install_remote_control_handlers(void)
+signals_install_manual_mode_handlers(void)
 {
-	/* Install handlers for manual-mode remote control signals */
-	return set_signal(SIGRTMIN + 1, sigsmallup) ?:
-	    set_signal(SIGRTMIN + 2, sigsmalldown) ?:
-	    set_signal(SIGRTMIN + 3, sigbigup) ?:
-	    set_signal(SIGRTMIN + 4, sigbigdown) ?:
-	    set_signal(SIGRTMIN + 5, sigtempreset);
+	/* Install handlers for exit, adjustment, and ignoring children */
+	return set_signal(SIGINT, sigexit) ?:
+		set_signal(SIGTERM, sigexit) ?:
+		set_signal(SIGUSR1, sigdisable) ?:
+		set_signal(SIGCHLD, SIG_IGN) ?:
+		set_signal(SIGRTMIN + 1, sigsmallup) ?:
+		set_signal(SIGRTMIN + 2, sigsmalldown) ?:
+		set_signal(SIGRTMIN + 3, sigbigup) ?:
+		set_signal(SIGRTMIN + 4, sigbigdown) ?:
+		set_signal(SIGRTMIN + 5, sigtempreset);
 }
