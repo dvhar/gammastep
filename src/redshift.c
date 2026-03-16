@@ -1230,7 +1230,9 @@ main(int argc, char *argv[])
 				}
 			}
 
-			pause(); // Wait for control or exit signals
+			if (is_wayland) {
+				pause(); // Wait for control or exit signals
+			}
 		}
 	}
 	break;
