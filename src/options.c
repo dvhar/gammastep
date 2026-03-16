@@ -141,7 +141,7 @@ print_help(const char *program_name)
 	   DAY is temperature at daytime,
 	   NIGHT is temperature at night
 	   no-wrap */
-	printf(_("Usage: %s -l LAT:LON -t DAY:NIGHT [OPTIONS...]"),
+	printf(_("Usage: %s -l LAT:LON -t DAY:NIGHT [OPTIONS...]\n"),
 		program_name);
 	fputs("\n", stdout);
 
@@ -183,15 +183,6 @@ print_help(const char *program_name)
 	      stdout);
 	fputs("\n", stdout);
 
-	/* TRANSLATORS: help output 8 */
-	fputs(_("Once running, gammastep can be controlled by sending it signals.\n"
-		"In manual mode (option -O), SIGRTMIN+1 and SIGRTMIN+2 will adjust the\n"
-		"temperature by 100K, and SIGRTMIN+3 and SIGRTMIN+4 by 500K.\n"
-		"SIGRTMIN+5 will reset the temperature to the initial value.\n"
-		"In continual mode, SIGUSR1 will toggle gammastep on and off.\n"),
-	      stdout);
-	fputs("\n", stdout);
-
 	/* TRANSLATORS: help output 5 */
 	printf(_("The neutral temperature is %uK. Using this value will not change "
 		 "the color\ntemperature of the display. Setting the color temperature "
@@ -204,8 +195,23 @@ print_help(const char *program_name)
 	/* TRANSLATORS: help output 6 */
 	printf(_("Default values:\n\n"
 		 "  Daytime temperature: %uK\n"
-		 "  Night temperature: %uK\n"),
+		 "  Night temperature: %uK\n\n"),
 	       DEFAULT_DAY_TEMP, DEFAULT_NIGHT_TEMP);
+
+	/* TRANSLATORS: help output 8 */
+	fputs(_("Once running, gammastep can be controlled by sending it signals.\n"
+		"USR1 toggles the redshift effect in continuous and manual modes.\n"
+		"In manual mode (option -O), these signals can change the temperature:\n"
+		"  RTMIN: reset temp to the starting value\n"
+		"  RTMIN+1: adjust temp up 100k\n"
+		"  RTMIN+2: adjust temp down 100k\n"
+		"  RTMIN+3: adjust temp up 500k\n"
+		"  RTMIN+4: adjust temp down 500k\n"
+		"  RTMIN+5 with arg: set temp to the specified value\n"
+		"  RTMIN+6 with arg: adjust temp by the specified value\n"
+		"The arg for signals RTMIN+5 and +6 is the one set with pkill's -q flag.\n"
+		"  Example: pkill -RTMIN+5 -q 3000 gammastep\n"),
+	      stdout);
 
 	fputs("\n", stdout);
 

@@ -94,9 +94,28 @@ Daytime: 6500K, night: 4500K
 .SH SIGNALS
 Once running, gammastep can be controlled by sending it signals.
 .TP
-In manual mode (option \fB\-O\fR), \fBSIGRTMIN+1\fR and \fBSIGRTMIN+2\fR will adjust the temperature by 100K, and \fBSIGRTMIN+3\fR and \fBSIGRTMIN+4\fR by 500K. \fBSIGRTMIN+5\fR will reset the temperature to the initial value.
-.TP
-In continual mode, \fBSIGUSR1\fR will toggle gammastep on and off.
+\fBSIGUSR1\fR
+Toggles the color adjustment effect on or off in both continuous and manual modes.
+.PP
+In manual mode (option \fB\-O\fR), the following real-time signals can be used to change the color temperature:
+.IP "\fBSIGRTMIN\fR"
+Reset temperature to the starting value.
+.IP "\fBSIGRTMIN+1\fR"
+Adjust temperature up by 100K.
+.IP "\fBSIGRTMIN+2\fR"
+Adjust temperature down by 100K.
+.IP "\fBSIGRTMIN+3\fR"
+Adjust temperature up by 500K.
+.IP "\fBSIGRTMIN+4\fR"
+Adjust temperature down by 500K.
+.IP "\fBSIGRTMIN+5\fR with arg"
+Set temperature to the specified value.
+.IP "\fBSIGRTMIN+6\fR with arg"
+Adjust temperature by the specified value.
+.PP
+The argument for signals \fBSIGRTMIN+5\fR and \fBSIGRTMIN+6\fR is provided using the \fB\-q\fR flag of \fBpkill\fR(1).
+.IP
+Example: \fBpkill \-RTMIN+5 \-q 3000 gammastep\fR
 .SH CONFIGURATION FILE
 A configuration file with the name \fIconfig.ini\fR can optionally be
 placed in \fI~/.config/gammastep/\fR (if the environment variable
