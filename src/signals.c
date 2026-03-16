@@ -83,7 +83,8 @@ sigtempreset(int signo)
 	temp_reset = 1;
 }
 
-int set_signal_internal(int sig, void *func, int flags) {
+int set_signal_internal(int sig, void *func, int flags)
+{
 	struct sigaction sigact;
 	sigset_t sigset;
 	int r;
@@ -130,11 +131,11 @@ signals_install_manual_mode_handlers(void)
 		set_signal(SIGTERM, sigexit) ?:
 		set_signal(SIGUSR1, sigdisable) ?:
 		set_signal(SIGCHLD, SIG_IGN) ?:
+		set_signal(SIGRTMIN, sigtempreset) ?:
 		set_signal(SIGRTMIN + 1, sigsmallup) ?:
 		set_signal(SIGRTMIN + 2, sigsmalldown) ?:
 		set_signal(SIGRTMIN + 3, sigbigup) ?:
 		set_signal(SIGRTMIN + 4, sigbigdown) ?:
-		set_signal(SIGRTMIN + 5, sigtempreset) ?:
-		set_signal_with_arg(SIGRTMIN + 6, sigsettemp) ?:
-		set_signal_with_arg(SIGRTMIN + 7, sigadjtemp);
+		set_signal_with_arg(SIGRTMIN + 5, sigsettemp) ?:
+		set_signal_with_arg(SIGRTMIN + 6, sigadjtemp);
 }
