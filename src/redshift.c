@@ -1157,6 +1157,8 @@ main(int argc, char *argv[])
 
 		color_setting_t manual = scheme->day;
 		manual.temperature = options.temp_set;
+		int disabled = 0;
+		int should_reset = 1; // To force a reset when disabled state changes
 
 		/* wlroots gamma adjustments automatically revert when the
 		 * process exits, so interrupts are used to exit or adjust temp.*/
@@ -1170,17 +1172,12 @@ main(int argc, char *argv[])
 			}
 		}
 
-
-		// New variables for manual mode disable logic
-		int disabled = 0;
-		int should_reset = 1; // To force a reset when disabled state changes
-
 		while (!exiting) {
 			// Check to see if disable signal was caught
-			if (disable) { // No need for !done here as it's not a "done" state like continual mode
+			if (disable) {
 				disabled = !disabled;
 				disable = 0;
-				should_reset = 1; // Force a reset of temperature when disabled state changes
+				should_reset = 1;
 			}
 
 			if (disabled) {
