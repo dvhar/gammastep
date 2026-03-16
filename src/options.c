@@ -201,7 +201,7 @@ print_help(const char *program_name)
 	/* TRANSLATORS: help output 8 */
 	fputs(_("Once running, gammastep can be controlled by sending it signals.\n"
 		"USR1 toggles the redshift effect in continuous and manual modes.\n"
-		"In manual mode (option -O), these signals can change the temperature:\n"
+		"In manual mode (option -O) on wayland, these signals can change the temperature:\n"
 		"  RTMIN: reset temp to the starting value\n"
 		"  RTMIN+1: adjust temp up 100k\n"
 		"  RTMIN+2: adjust temp down 100k\n"

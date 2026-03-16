@@ -1163,13 +1163,13 @@ main(int argc, char *argv[])
 		int is_wayland = strcmp(options.method->name, "wayland") == 0;
 		if (is_wayland) {
 			vlog_notice(_("Press ctrl-c to stop..."));
+			r = signals_install_manual_mode_handlers();
+			if (r < 0) {
+				options.method->free(method_state);
+				exit(EXIT_FAILURE);
+			}
 		}
 
-		r = signals_install_manual_mode_handlers();
-		if (r < 0) {
-			options.method->free(method_state);
-			exit(EXIT_FAILURE);
-		}
 
 		// New variables for manual mode disable logic
 		int disabled = 0;
@@ -1230,7 +1230,9 @@ main(int argc, char *argv[])
 				}
 			}
 
-			pause(); // Wait for control or exit signals
+			if (is_wayland) {
+				pause(); // Wait for control or exit signals
+			}
 		}
 	}
 	break;
