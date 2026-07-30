@@ -97,7 +97,8 @@ Once running, gammastep can be controlled by sending it signals.
 \fBSIGUSR1\fR
 Toggles the color adjustment effect on or off in both continuous and manual modes.
 .PP
-In manual mode (option \fB\-O\fR), the following real-time signals can be used to change the color temperature:
+In manual mode (option \fB\-O\fR) on wayland, gammastep runs persistently and
+can be adjusted by using the following real-time signals:
 .IP "\fBSIGRTMIN\fR"
 Reset temperature to the starting value.
 .IP "\fBSIGRTMIN+1\fR"

@@ -73,6 +73,7 @@
 #define MAX_LON   180.0
 #define MIN_TEMP   1000
 #define MAX_TEMP  25000
+#define MAX_ADJUST_TEMP 6500
 #define MIN_BRIGHTNESS  0.1
 #define MAX_BRIGHTNESS  1.0
 #define MIN_GAMMA   0.1
@@ -1157,30 +1158,27 @@ main(int argc, char *argv[])
 
 		color_setting_t manual = scheme->day;
 		manual.temperature = options.temp_set;
+		int disabled = 0;
+		int should_reset = 1; // To force a reset when disabled state changes
 
 		/* wlroots gamma adjustments automatically revert when the
 		 * process exits, so interrupts are used to exit or adjust temp.*/
 		int is_wayland = strcmp(options.method->name, "wayland") == 0;
 		if (is_wayland) {
 			vlog_notice(_("Press ctrl-c to stop..."));
+			r = signals_install_manual_mode_handlers();
+			if (r < 0) {
+				options.method->free(method_state);
+				exit(EXIT_FAILURE);
+			}
 		}
-
-		r = signals_install_manual_mode_handlers();
-		if (r < 0) {
-			options.method->free(method_state);
-			exit(EXIT_FAILURE);
-		}
-
-		// New variables for manual mode disable logic
-		int disabled = 0;
-		int should_reset = 1; // To force a reset when disabled state changes
 
 		while (!exiting) {
 			// Check to see if disable signal was caught
-			if (disable) { // No need for !done here as it's not a "done" state like continual mode
+			if (disable) {
 				disabled = !disabled;
 				disable = 0;
-				should_reset = 1; // Force a reset of temperature when disabled state changes
+				should_reset = 1;
 			}
 
 			if (disabled) {
@@ -1202,7 +1200,7 @@ main(int argc, char *argv[])
 			} else {
 				if (temp_adj) {
 					manual.temperature = CLAMP(MIN_TEMP,
-						manual.temperature + temp_adj, MAX_TEMP);
+						manual.temperature + temp_adj, MAX_ADJUST_TEMP);
 					temp_adj = 0;
 					should_reset = 1;
 				}

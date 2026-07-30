@@ -198,10 +198,10 @@ print_help(const char *program_name)
 		 "  Night temperature: %uK\n\n"),
 	       DEFAULT_DAY_TEMP, DEFAULT_NIGHT_TEMP);
 
-	/* TRANSLATORS: help output 8 */
+	/* TRANSLATORS: help output 7 */
 	fputs(_("Once running, gammastep can be controlled by sending it signals.\n"
 		"USR1 toggles the redshift effect in continuous and manual modes.\n"
-		"In manual mode (option -O), these signals can change the temperature:\n"
+		"In manual mode (option -O) on wayland, these signals can change the temperature:\n"
 		"  RTMIN: reset temp to the starting value\n"
 		"  RTMIN+1: adjust temp up 100k\n"
 		"  RTMIN+2: adjust temp down 100k\n"
@@ -215,7 +215,7 @@ print_help(const char *program_name)
 
 	fputs("\n", stdout);
 
-	/* TRANSLATORS: help output 7 */
+	/* TRANSLATORS: help output 8 */
 	printf(_("Please report bugs to <%s>\n"), PACKAGE_BUGREPORT);
 }
 
